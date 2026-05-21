@@ -291,8 +291,10 @@ let currentFilter = 'all';
 function loadRespondents() {
   try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; }
 }
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbzrb-jUWUbXOW6jPAs8DsRknMl2PWtXshO9fkC_dgGk-0jZFnH3zp3fMlPAknX04hex/exec";
 function saveRespondent(record) {
   try { const l = loadRespondents(); l.push(record); localStorage.setItem(STORAGE_KEY, JSON.stringify(l)); } catch(e) {}
+  fetch(SHEETS_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(record) }).catch(e => console.warn("Sheets sync failed:", e));
 }
 
 function analyzeInconsistency() {
