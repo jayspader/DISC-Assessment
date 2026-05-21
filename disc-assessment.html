@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DISC Personality Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --D: #FF4D4D; --I: #FFB347; --S: #4CAF82; --C: #5B9BF5;
+    --bg: #111111; --surface: #1E1E1E; --border: #333333;
+    --text: #FFFFFF; --muted: #AAAAAA; --flag: #FF4D4D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #111111 !important; color: #FFFFFF !important; }
+  body { background: #111111 !important; color: #FFFFFF !important; font-family: 'DM Mono', monospace; min-height: 100vh; overflow-x: hidden; }
+  .noise { position: fixed; inset: 0; pointer-events: none; z-index: 999; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); opacity: 0.4; }
+  header { padding: 48px 40px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  .logo { font-family: 'Playfair Display', serif; font-size: clamp(36px,6vw,72px); font-weight: 900; letter-spacing: -2px; line-height: 1; background: linear-gradient(135deg,#FFFFFF,#AAAAAA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { font-size: 11px; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; padding-bottom: 6px; }
+  .header-right { display: flex; align-items: center; gap: 20px; }
+  .btn-admin-link { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); background: none; border: 1px solid var(--border); padding: 8px 16px; cursor: pointer; font-family: 'DM Mono', monospace; transition: all 0.2s; }
+  .btn-admin-link:hover { border-color: #555; color: var(--text); }
+  .progress-wrap { display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--muted); letter-spacing: 2px; }
+  .progress-track { width: 120px; height: 2px; background: var(--border); position: relative; overflow: hidden; }
+  .progress-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--text); transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+  main { max-width: 780px; margin: 0 auto; padding: 60px 40px 80px; }
+  /* NAME ENTRY */
+  .name-entry { text-align: center; padding: 80px 0 60px; animation: fadeUp 0.6s ease both; }
+  .name-entry h2 { font-family: 'Playfair Display', serif; font-size: clamp(28px,5vw,48px); font-weight: 700; margin-bottom: 12px; }
+  .name-entry p { color: var(--muted); font-size: 13px; margin-bottom: 40px; }
+  .name-input-wrap { display: flex; gap: 12px; max-width: 420px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+  .name-input { flex: 1; min-width: 200px; padding: 14px 20px; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; outline: none; transition: border-color 0.2s; }
+  .name-input:focus { border-color: #777; }
+  .name-input::placeholder { color: var(--muted); }
+  /* INTRO */
+  .intro { text-align: center; padding: 60px 0; animation: fadeUp 0.6s ease both; }
+  .intro h2 { font-family: 'Playfair Display', serif; font-size: clamp(28px,5vw,52px); font-weight: 700; margin-bottom: 20px; line-height: 1.15; }
+  .intro p { color: var(--muted); font-size: 13px; line-height: 1.8; max-width: 520px; margin: 0 auto 40px; }
+  .disc-legend { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 48px; }
+  .legend-item { padding: 16px 12px; border: 1px solid var(--border); text-align: center; transition: border-color 0.2s; }
+  .legend-item:hover { border-color: #444; }
+  .legend-letter { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; display: block; margin-bottom: 4px; }
+  .legend-name { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+  .legend-item.D .legend-letter { color: var(--D); } .legend-item.I .legend-letter { color: var(--I); }
+  .legend-item.S .legend-letter { color: var(--S); } .legend-item.C .legend-letter { color: var(--C); }
+  .btn-start { display: inline-block; padding: 16px 48px; border: 1px solid var(--text); background: transparent; color: var(--text); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: background 0.2s,color 0.2s; }
+  .btn-start:hover { background: var(--text); color: var(--bg); }
+  /* QUESTION */
+  .question-wrap { animation: fadeUp 0.5s ease both; }
+  .q-label { font-size: 10px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 32px; }
+  .q-text { font-family: 'Playfair Display', serif; font-size: clamp(22px,4vw,38px); font-weight: 700; line-height: 1.3; margin-bottom: 48px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn { display: flex; align-items: center; gap: 16px; padding: 18px 24px; border: 1px solid var(--border); background: transparent; color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; text-align: left; cursor: pointer; transition: all 0.2s; width: 100%; position: relative; overflow: hidden; }
+  .option-btn::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--text); transform: scaleY(0); transition: transform 0.2s; }
+  .option-btn:hover { border-color: #555; background: rgba(255,255,255,0.03); padding-left: 32px; }
+  .option-btn:hover::before { transform: scaleY(1); }
+  .option-btn.selected { border-color: var(--text); background: rgba(240,237,230,0.05); }
+  .opt-letter { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; opacity: 0.4; min-width: 20px; }
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border); }
+  .btn-nav { padding: 12px 32px; border: 1px solid var(--border); background: transparent; color: var(--text); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .btn-nav:hover:not(:disabled) { border-color: #555; background: rgba(255,255,255,0.03); }
+  .btn-nav:disabled { opacity: 0.2; cursor: default; }
+  .btn-nav.primary { border-color: var(--text); }
+  .btn-nav.primary:hover:not(:disabled) { background: var(--text); color: var(--bg); }
+  /* RESULTS */
+  .results-wrap { animation: fadeUp 0.6s ease both; }
+  .results-title { font-family: 'Playfair Display', serif; font-size: clamp(28px,5vw,52px); font-weight: 900; margin-bottom: 8px; }
+  .results-sub { font-size: 11px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 48px; }
+  .bars { display: flex; flex-direction: column; gap: 20px; margin-bottom: 48px; }
+  .bar-row { display: grid; grid-template-columns: 24px 1fr 40px; align-items: center; gap: 16px; }
+  .bar-letter { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; text-align: center; }
+  .bar-letter.D { color: var(--D); } .bar-letter.I { color: var(--I); } .bar-letter.S { color: var(--S); } .bar-letter.C { color: var(--C); }
+  .bar-track { height: 8px; background: var(--border); position: relative; overflow: hidden; }
+  .bar-fill { position: absolute; left: 0; top: 0; bottom: 0; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); width: 0%; }
+  .bar-fill.D { background: var(--D); } .bar-fill.I { background: var(--I); } .bar-fill.S { background: var(--S); } .bar-fill.C { background: var(--C); }
+  .bar-pct { font-size: 11px; color: var(--muted); text-align: right; letter-spacing: 1px; }
+  .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 40px; }
+  .profile-card { padding: 24px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+  .profile-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .profile-card.D::after { background: var(--D); } .profile-card.I::after { background: var(--I); }
+  .profile-card.S::after { background: var(--S); } .profile-card.C::after { background: var(--C); }
+  .pc-label { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .pc-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+  .pc-body { font-size: 12px; line-height: 1.7; color: #CCCCCC; }
+  .dominant-banner { background: var(--surface); border: 1px solid var(--border); padding: 32px; margin-bottom: 32px; position: relative; overflow: hidden; }
+  .dom-bg { position: absolute; right: -20px; top: -20px; font-family: 'Playfair Display', serif; font-size: 200px; font-weight: 900; opacity: 0.04; line-height: 1; pointer-events: none; }
+  .dom-label { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .dom-type { font-family: 'Playfair Display', serif; font-size: clamp(24px,4vw,42px); font-weight: 900; margin-bottom: 16px; }
+  .dom-desc { font-size: 13px; line-height: 1.8; color: #CCCCCC; max-width: 580px; }
+  .btn-restart { display: inline-block; padding: 14px 40px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; margin-top: 16px; }
+  .btn-restart:hover { border-color: #555; color: var(--text); }
+  /* ADMIN */
+  .admin-wrap { animation: fadeUp 0.5s ease both; }
+  .admin-login { max-width: 400px; margin: 80px auto; text-align: center; }
+  .admin-login h2 { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; margin-bottom: 8px; }
+  .admin-login p { color: var(--muted); font-size: 12px; margin-bottom: 32px; }
+  .admin-input { width: 100%; padding: 14px 20px; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; outline: none; margin-bottom: 12px; transition: border-color 0.2s; }
+  .admin-input:focus { border-color: #777; }
+  .admin-error { color: var(--flag); font-size: 11px; margin-bottom: 12px; min-height: 16px; }
+  .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 12px; }
+  .admin-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; }
+  .admin-sub { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+  .admin-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 32px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; text-align: center; }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; display: block; margin-bottom: 4px; }
+  .stat-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+  .stat-num.flagged { color: var(--flag); }
+  .respondent-list { display: flex; flex-direction: column; gap: 12px; }
+  .respondent-card { background: var(--surface); border: 1px solid var(--border); padding: 20px 24px; cursor: pointer; transition: border-color 0.2s; }
+  .respondent-card:hover { border-color: #555; }
+  .respondent-card.flagged-card { border-left: 3px solid var(--flag); }
+  .rc-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .rc-name { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; }
+  .rc-meta { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+  .rc-badges { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .badge { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; padding: 4px 10px; border: 1px solid var(--border); }
+  .badge.dominant-D { border-color: var(--D); color: var(--D); } .badge.dominant-I { border-color: var(--I); color: var(--I); }
+  .badge.dominant-S { border-color: var(--S); color: var(--S); } .badge.dominant-C { border-color: var(--C); color: var(--C); }
+  .badge.flag { border-color: var(--flag); color: var(--flag); background: rgba(255,77,77,0.08); }
+  .rc-scores { display: flex; gap: 16px; font-size: 11px; color: var(--muted); }
+  .rc-detail { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .rc-detail.open { display: block; }
+  .flag-detail { background: rgba(255,77,77,0.07); border: 1px solid rgba(255,77,77,0.25); padding: 12px 16px; margin-bottom: 16px; font-size: 12px; line-height: 1.6; color: #ffaaaa; }
+  .flag-detail strong { color: var(--flag); }
+  .answer-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 8px; }
+  .answer-item { font-size: 11px; color: var(--muted); padding: 8px 12px; background: rgba(255,255,255,0.03); border-left: 2px solid var(--border); line-height: 1.5; }
+  .answer-item.changed { border-left-color: var(--flag); }
+  .answer-item .q-num { color: var(--text); font-weight: 500; display: block; margin-bottom: 2px; }
+  .answer-item .changes-note { color: var(--flag); font-size: 10px; }
+  .empty-state { text-align: center; padding: 60px 0; color: var(--muted); font-size: 13px; }
+  .btn-logout { padding: 8px 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .btn-logout:hover { border-color: #555; color: var(--text); }
+  .btn-clear-data { padding: 8px 20px; border: 1px solid rgba(255,77,77,0.3); background: transparent; color: rgba(255,77,77,0.6); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .btn-clear-data:hover { border-color: var(--flag); color: var(--flag); }
+  .filter-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-btn { padding: 6px 16px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .filter-btn.active { border-color: var(--text); color: var(--text); }
+  .filter-btn:hover { border-color: #555; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+  .hidden { display: none; }
+  @media (max-width: 600px) {
+    header { padding: 32px 24px 24px; } main { padding: 40px 24px 60px; }
+    .disc-legend { grid-template-columns: repeat(2,1fr); } .profile-grid { grid-template-columns: 1fr; }
+    .admin-stats { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<header>
+  <div>
+    <div class="logo">DISC</div>
+    <div class="subtitle">Personality Assessment</div>
+  </div>
+  <div class="header-right">
+    <div class="progress-wrap" id="progressWrap" style="display:none">
+      <span id="progressLabel">01 / 20</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:5%"></div></div>
+    </div>
+    <button class="btn-admin-link" onclick="showAdmin()">Admin</button>
+  </div>
+</header>
+<main>
+  <!-- NAME ENTRY -->
+  <div id="nameSection" class="name-entry">
+    <h2>Before we begin</h2>
+    <p>Enter your name so your results can be saved.</p>
+    <div class="name-input-wrap">
+      <input class="name-input" id="nameInput" type="text" placeholder="Your full name" autocomplete="off" />
+      <button class="btn-start" onclick="submitName()">Continue →</button>
+    </div>
+  </div>
+  <!-- INTRO -->
+  <div id="introSection" class="intro hidden">
+    <h2>Understand how<br>you think &amp; act.</h2>
+    <p>This 20-question assessment reveals your dominant behavioral style. Answer honestly — there are no right or wrong answers.</p>
+    <div class="disc-legend">
+      <div class="legend-item D"><span class="legend-letter">D</span><span class="legend-name">Dominance</span></div>
+      <div class="legend-item I"><span class="legend-letter">I</span><span class="legend-name">Influence</span></div>
+      <div class="legend-item S"><span class="legend-letter">S</span><span class="legend-name">Steadiness</span></div>
+      <div class="legend-item C"><span class="legend-letter">C</span><span class="legend-name">Conscientiousness</span></div>
+    </div>
+    <button class="btn-start" onclick="startAssessment()">Begin Assessment</button>
+  </div>
+  <!-- QUESTIONS -->
+  <div id="questionSection" class="question-wrap hidden">
+    <div class="q-label" id="qLabel">Question 01 of 20</div>
+    <div class="q-text" id="qText"></div>
+    <div class="options" id="optionsContainer"></div>
+    <div class="nav-row">
+      <button class="btn-nav" id="btnPrev" onclick="goBack()">← Back</button>
+      <button class="btn-nav primary" id="btnNext" onclick="goNext()">Next →</button>
+    </div>
+  </div>
+  <!-- RESULTS -->
+  <div id="resultsSection" class="results-wrap hidden">
+    <div class="results-title" id="resultsTitle">Your Results</div>
+    <div class="results-sub" id="resultDate"></div>
+    <div class="dominant-banner">
+      <div class="dom-bg" id="domBgLetter"></div>
+      <div class="dom-label">Dominant Style</div>
+      <div class="dom-type" id="domType"></div>
+      <div class="dom-desc" id="domDesc"></div>
+    </div>
+    <div class="bars" id="barsContainer"></div>
+    <div class="profile-grid" id="profileGrid"></div>
+    <button class="btn-restart" onclick="restart()">↺ Take Again</button>
+  </div>
+  <!-- ADMIN -->
+  <div id="adminSection" class="admin-wrap hidden">
+    <div id="adminLogin" class="admin-login">
+      <h2>Admin Access</h2>
+      <p>Enter the admin password to view respondent profiles.</p>
+      <input class="admin-input" id="adminPassInput" type="password" placeholder="Password" autocomplete="off" />
+      <div class="admin-error" id="adminError"></div>
+      <button class="btn-start" onclick="checkAdminPass()">Enter →</button>
+      <br><br>
+      <button class="btn-logout" onclick="exitAdmin()">← Back</button>
+    </div>
+    <div id="adminDashboard" class="hidden">
+      <div class="admin-header">
+        <div>
+          <div class="admin-title">Respondents</div>
+          <div class="admin-sub" id="adminSubLabel">0 profiles stored</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-clear-data" onclick="clearAllData()">Clear All Data</button>
+          <button class="btn-logout" onclick="exitAdmin()">← Exit</button>
+        </div>
+      </div>
+      <div class="admin-stats">
+        <div class="stat-card"><span class="stat-num" id="statTotal">0</span><span class="stat-label">Total Respondents</span></div>
+        <div class="stat-card"><span class="stat-num flagged" id="statFlagged">0</span><span class="stat-label">Flagged Profiles</span></div>
+        <div class="stat-card"><span class="stat-num" id="statDominant">—</span><span class="stat-label">Most Common Style</span></div>
+      </div>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+        <button class="filter-btn" onclick="setFilter('flagged',this)">Flagged Only</button>
+        <button class="filter-btn" onclick="setFilter('D',this)">D</button>
+        <button class="filter-btn" onclick="setFilter('I',this)">I</button>
+        <button class="filter-btn" onclick="setFilter('S',this)">S</button>
+        <button class="filter-btn" onclick="setFilter('C',this)">C</button>
+      </div>
+      <div class="respondent-list" id="respondentList"></div>
+    </div>
+  </div>
+</main>
+<script>
+const ADMIN_PASSWORD = "disc2024";
+const STORAGE_KEY = "disc_respondents_v2";
+
+const questions = [
+  {text:"When faced with a difficult decision, I tend to...",options:[{text:"Act quickly and decisively, even with incomplete information.",type:"D"},{text:"Talk it through with others and get their buy-in.",type:"I"},{text:"Take time to consider how it affects everyone involved.",type:"S"},{text:"Gather all the facts and analyze before deciding.",type:"C"}]},
+  {text:"In a group setting, I naturally...",options:[{text:"Take charge and direct the group toward the goal.",type:"D"},{text:"Energize the group and keep morale high.",type:"I"},{text:"Support others and ensure everyone feels included.",type:"S"},{text:"Focus on accuracy and making sure we do things correctly.",type:"C"}]},
+  {text:"My biggest strength at work is...",options:[{text:"Getting results and overcoming obstacles.",type:"D"},{text:"Inspiring and persuading people.",type:"I"},{text:"Being dependable and keeping things stable.",type:"S"},{text:"Producing high-quality, error-free work.",type:"C"}]},
+  {text:"When someone criticizes my work, I...",options:[{text:"Push back if I disagree — I stand by my work.",type:"D"},{text:"Try to understand their perspective and find common ground.",type:"I"},{text:"Feel hurt but try to remain calm and accommodating.",type:"S"},{text:"Carefully consider if the criticism is valid and adjust accordingly.",type:"C"}]},
+  {text:"My ideal work environment is...",options:[{text:"Fast-paced with authority to make decisions.",type:"D"},{text:"Collaborative and socially engaging.",type:"I"},{text:"Predictable and team-oriented with clear expectations.",type:"S"},{text:"Structured with clear standards and time to do things right.",type:"C"}]},
+  {text:"When starting a new project, I first...",options:[{text:"Define the goal and jump into action.",type:"D"},{text:"Get everyone excited and rally the team.",type:"I"},{text:"Understand the process and my role clearly.",type:"S"},{text:"Research thoroughly before beginning.",type:"C"}]},
+  {text:"Other people would describe me as...",options:[{text:"Bold, competitive, and results-driven.",type:"D"},{text:"Enthusiastic, optimistic, and sociable.",type:"I"},{text:"Patient, reliable, and warm.",type:"S"},{text:"Precise, analytical, and careful.",type:"C"}]},
+  {text:"When there's conflict on my team, I...",options:[{text:"Address it head-on and push toward a resolution.",type:"D"},{text:"Try to smooth things over and restore positive energy.",type:"I"},{text:"Mediate quietly and try to find compromise.",type:"S"},{text:"Analyze the root cause and propose a logical solution.",type:"C"}]},
+  {text:"I feel most accomplished when...",options:[{text:"I've achieved a difficult goal on my own terms.",type:"D"},{text:"I've inspired or made a positive impact on others.",type:"I"},{text:"I've helped my team succeed and feel supported.",type:"S"},{text:"I've produced something accurate, thorough, and high quality.",type:"C"}]},
+  {text:"My biggest fear professionally is...",options:[{text:"Being controlled or losing autonomy.",type:"D"},{text:"Rejection or social disapproval.",type:"I"},{text:"Sudden change or loss of stability.",type:"S"},{text:"Being criticized for poor quality work.",type:"C"}]},
+  {text:"When I communicate, I prefer to be...",options:[{text:"Direct and to the point — no fluff.",type:"D"},{text:"Expressive and storytelling-driven.",type:"I"},{text:"Warm and attentive, listening carefully.",type:"S"},{text:"Precise and data-driven with supporting evidence.",type:"C"}]},
+  {text:"My approach to rules and procedures is...",options:[{text:"Rules can be bent if they slow results.",type:"D"},{text:"I follow them loosely — flexibility matters more.",type:"I"},{text:"I follow them carefully because they keep things stable.",type:"S"},{text:"I follow them strictly — they exist for good reason.",type:"C"}]},
+  {text:"When I'm under pressure, I...",options:[{text:"Become more forceful and take control.",type:"D"},{text:"Become more animated, talking and involving others.",type:"I"},{text:"Become quieter and more accommodating to avoid conflict.",type:"S"},{text:"Withdraw and focus deeply on getting things exactly right.",type:"C"}]},
+  {text:"When delegating, I care most about...",options:[{text:"Getting it done fast and correctly — I'll step in if needed.",type:"D"},{text:"Keeping people motivated and excited about the task.",type:"I"},{text:"Making sure the person feels supported and set up for success.",type:"S"},{text:"Setting clear expectations and checking quality outputs.",type:"C"}]},
+  {text:"I make decisions primarily based on...",options:[{text:"Instinct and bottom-line impact.",type:"D"},{text:"Gut feeling and what people will respond to.",type:"I"},{text:"What's best for the team's harmony and well-being.",type:"S"},{text:"Data, research, and careful analysis.",type:"C"}]},
+  {text:"My relationship with change is...",options:[{text:"I drive change — status quo is the enemy.",type:"D"},{text:"I embrace it — new situations are exciting.",type:"I"},{text:"I prefer gradual change with advance notice.",type:"S"},{text:"I accept it only when it's well-planned and justified.",type:"C"}]},
+  {text:"At a networking event, I...",options:[{text:"Make my mark quickly and focus on influential contacts.",type:"D"},{text:"Work the room enthusiastically and meet everyone.",type:"I"},{text:"Stick to a few meaningful conversations with people I connect with.",type:"S"},{text:"Have a few deep, substantive conversations on specific topics.",type:"C"}]},
+  {text:"A good leader, to me, is someone who...",options:[{text:"Sets a bold vision and drives the team to deliver results.",type:"D"},{text:"Motivates and inspires, creating energy and enthusiasm.",type:"I"},{text:"Builds trust, supports the team, and keeps things stable.",type:"S"},{text:"Maintains high standards, plans carefully, and ensures quality.",type:"C"}]},
+  {text:"When I have free time, I prefer to...",options:[{text:"Pursue competitive activities or ambitious personal goals.",type:"D"},{text:"Socialize, attend events, or engage in creative pursuits.",type:"I"},{text:"Spend time with close family and friends in familiar settings.",type:"S"},{text:"Read, learn, or work on a detailed hobby or project.",type:"C"}]},
+  {text:"I believe the most important quality in a colleague is...",options:[{text:"Drive — they get things done without excuses.",type:"D"},{text:"Energy — they bring positivity and enthusiasm.",type:"I"},{text:"Loyalty — they're dependable and always there when needed.",type:"S"},{text:"Competence — they do the job with precision and care.",type:"C"}]}
+];
+
+const profiles = {
+  D:{name:"Dominance",tagline:"The Driver",desc:"You are direct, decisive, and results-focused. You thrive in challenging environments and tend to lead naturally. You prefer action over deliberation and may become frustrated with slow processes or indecision. Your greatest strength is getting things done; your growth edge is patience and empathy.",strengths:"Results-oriented, decisive, bold, competitive, confident",growth:"Impatience, risk of overlooking others' feelings, tendency to control"},
+  I:{name:"Influence",tagline:"The Inspirer",desc:"You are enthusiastic, optimistic, and people-oriented. You excel at inspiring others, building relationships, and creating energy in a room. You may struggle with follow-through or over-promising. Your greatest strength is your ability to motivate and connect; your growth edge is focus and consistency.",strengths:"Persuasive, enthusiastic, collaborative, creative, optimistic",growth:"Lack of follow-through, disorganization, over-promising"},
+  S:{name:"Steadiness",tagline:"The Supporter",desc:"You are warm, patient, and deeply reliable. You value stability, loyalty, and collaboration. You are the glue that holds teams together. You may struggle with asserting yourself or initiating change. Your greatest strength is your dependability and empathy; your growth edge is self-advocacy.",strengths:"Dependable, calm, empathetic, team-focused, patient",growth:"Avoids conflict, resistant to change, may suppress own needs"},
+  C:{name:"Conscientiousness",tagline:"The Analyst",desc:"You are precise, analytical, and quality-focused. You excel when given time to research and plan. You hold yourself and others to high standards and are often the person who catches what others miss. Your greatest strength is your accuracy; your growth edge is decisiveness under ambiguity.",strengths:"Detail-oriented, accurate, systematic, logical, thorough",growth:"Analysis paralysis, perfectionism, overcritical tendencies"}
+};
+
+let respondentName = '';
+let answers = new Array(questions.length).fill(null);
+let changeCounts = new Array(questions.length).fill(0);
+let answerHistory = new Array(questions.length).fill(null).map(() => []);
+let current = 0;
+let adminAuthed = false;
+let currentFilter = 'all';
+
+function loadRespondents() {
+  try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; }
+}
+function saveRespondent(record) {
+  try { const l = loadRespondents(); l.push(record); localStorage.setItem(STORAGE_KEY, JSON.stringify(l)); } catch(e) {}
+}
+
+function analyzeInconsistency() {
+  let totalChanges = 0, flaggedQuestions = [], prestigeDriftCount = 0;
+  for (let i = 0; i < questions.length; i++) {
+    const changes = changeCounts[i];
+    totalChanges += changes;
+    if (changes >= 2) flaggedQuestions.push(i);
+    const history = answerHistory[i];
+    if (history.length >= 2) {
+      const firstType = questions[i].options[history[0]].type;
+      const lastType = questions[i].options[history[history.length-1]].type;
+      if ((firstType==='S'||firstType==='C') && (lastType==='D'||lastType==='I')) prestigeDriftCount++;
+    }
+  }
+  const isFlagged = flaggedQuestions.length > 0 || totalChanges >= 4 || prestigeDriftCount >= 3;
+  const reasons = [];
+  if (flaggedQuestions.length > 0) reasons.push(`Changed answer 2+ times on question(s): ${flaggedQuestions.map(q=>q+1).join(', ')}`);
+  if (totalChanges >= 4) reasons.push(`${totalChanges} total answer changes across the assessment`);
+  if (prestigeDriftCount >= 3) reasons.push(`${prestigeDriftCount} answers shifted from S/C toward D/I (prestige drift)`);
+  return { isFlagged, totalChanges, flaggedQuestions, prestigeDriftCount, reasons };
+}
+
+function submitName() {
+  const val = document.getElementById('nameInput').value.trim();
+  if (!val) { document.getElementById('nameInput').style.borderColor='var(--flag)'; setTimeout(()=>document.getElementById('nameInput').style.borderColor='',600); return; }
+  respondentName = val;
+  document.getElementById('nameSection').classList.add('hidden');
+  document.getElementById('introSection').classList.remove('hidden');
+}
+document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') submitName(); });
+
+function startAssessment() {
+  document.getElementById('introSection').classList.add('hidden');
+  document.getElementById('progressWrap').style.display = 'flex';
+  document.getElementById('questionSection').classList.remove('hidden');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  document.getElementById('qLabel').textContent = `Question ${String(current+1).padStart(2,'0')} of ${questions.length}`;
+  document.getElementById('qText').textContent = q.text;
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  const labels = ['A','B','C','D'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (answers[current]===i ? ' selected' : '');
+    btn.innerHTML = `<span class="opt-letter">${labels[i]}</span><span>${opt.text}</span>`;
+    btn.onclick = () => selectOption(i);
+    container.appendChild(btn);
+  });
+  const pct = ((current+1)/questions.length)*100;
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressLabel').textContent = `${String(current+1).padStart(2,'0')} / ${questions.length}`;
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').textContent = current===questions.length-1 ? 'See Results →' : 'Next →';
+  const wrap = document.getElementById('questionSection');
+  wrap.style.animation = 'none'; wrap.offsetHeight; wrap.style.animation = 'fadeUp 0.4s ease both';
+}
+
+function selectOption(index) {
+  if (answers[current] !== null && answers[current] !== index) changeCounts[current]++;
+  const history = answerHistory[current];
+  if (history.length===0 || history[history.length-1]!==index) history.push(index);
+  answers[current] = index;
+  document.querySelectorAll('.option-btn').forEach((btn,i) => btn.classList.toggle('selected', i===index));
+}
+
+function goNext() {
+  if (answers[current]===null) { document.getElementById('optionsContainer').style.outline='1px solid var(--flag)'; setTimeout(()=>document.getElementById('optionsContainer').style.outline='',600); return; }
+  if (current===questions.length-1) { showResults(); } else { current++; renderQuestion(); }
+}
+function goBack() { if (current>0) { current--; renderQuestion(); } }
+
+function showResults() {
+  const scores = {D:0,I:0,S:0,C:0};
+  answers.forEach((ans,qi) => { if(ans!==null) scores[questions[qi].options[ans].type]++; });
+  const inconsistency = analyzeInconsistency();
+  const total = Object.values(scores).reduce((a,b)=>a+b,0);
+  const dominant = Object.keys(scores).sort((a,b)=>scores[b]-scores[a])[0];
+  const questionDetails = questions.map((q,i) => ({
+    questionIndex:i, questionText:q.text,
+    finalAnswer:answers[i],
+    finalAnswerText:answers[i]!==null?q.options[answers[i]].text:null,
+    finalAnswerType:answers[i]!==null?q.options[answers[i]].type:null,
+    changeCount:changeCounts[i],
+    answerHistory:answerHistory[i].map(idx=>({index:idx,type:q.options[idx].type}))
+  }));
+  saveRespondent({id:Date.now(),name:respondentName,completedAt:new Date().toISOString(),scores,dominant,inconsistency,questionDetails});
+
+  document.getElementById('questionSection').classList.add('hidden');
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('resultsSection').classList.remove('hidden');
+  document.getElementById('resultsTitle').textContent = `${respondentName}'s Results`;
+  document.getElementById('resultDate').textContent = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}).toUpperCase();
+  const p = profiles[dominant];
+  document.getElementById('domBgLetter').textContent = dominant;
+  document.getElementById('domType').textContent = `${dominant} — ${p.tagline}`;
+  document.getElementById('domDesc').textContent = p.desc;
+  const barsContainer = document.getElementById('barsContainer');
+  barsContainer.innerHTML = '';
+  ['D','I','S','C'].forEach(type => {
+    const pct = Math.round((scores[type]/total)*100);
+    const row = document.createElement('div'); row.className = 'bar-row';
+    row.innerHTML = `<div class="bar-letter ${type}">${type}</div><div class="bar-track"><div class="bar-fill ${type}" id="fill-${type}"></div></div><div class="bar-pct">${pct}%</div>`;
+    barsContainer.appendChild(row);
+  });
+  setTimeout(()=>{ ['D','I','S','C'].forEach(type=>{ const pct=Math.round((scores[type]/total)*100); document.getElementById('fill-'+type).style.width=pct+'%'; }); },200);
+  const grid = document.getElementById('profileGrid'); grid.innerHTML = '';
+  ['D','I','S','C'].forEach(type => {
+    const pr = profiles[type]; const card = document.createElement('div');
+    card.className = `profile-card ${type}`;
+    card.innerHTML = `<div class="pc-label">${type} — ${pr.name}</div><div class="pc-title">${pr.tagline}</div><div class="pc-body"><strong style="color:#FFF">Strengths:</strong> ${pr.strengths}<br><br><strong style="color:#FFF">Watch for:</strong> ${pr.growth}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function restart() {
+  answers = new Array(questions.length).fill(null);
+  changeCounts = new Array(questions.length).fill(0);
+  answerHistory = new Array(questions.length).fill(null).map(()=>[]);
+  current = 0; respondentName = '';
+  document.getElementById('resultsSection').classList.add('hidden');
+  document.getElementById('nameSection').classList.remove('hidden');
+  document.getElementById('nameInput').value = '';
+}
+
+function showAdmin() {
+  ['nameSection','introSection','questionSection','resultsSection'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('adminSection').classList.remove('hidden');
+  if (adminAuthed) { showDashboard(); } else { document.getElementById('adminLogin').classList.remove('hidden'); document.getElementById('adminDashboard').classList.add('hidden'); }
+}
+function checkAdminPass() {
+  const val = document.getElementById('adminPassInput').value;
+  if (val===ADMIN_PASSWORD) { adminAuthed=true; document.getElementById('adminError').textContent=''; document.getElementById('adminPassInput').value=''; showDashboard(); }
+  else { document.getElementById('adminError').textContent='Incorrect password.'; document.getElementById('adminPassInput').value=''; }
+}
+document.getElementById('adminPassInput').addEventListener('keydown', e=>{ if(e.key==='Enter') checkAdminPass(); });
+
+function showDashboard() {
+  document.getElementById('adminLogin').classList.add('hidden');
+  document.getElementById('adminDashboard').classList.remove('hidden');
+  renderDashboard();
+}
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRespondentList();
+}
+function renderDashboard() {
+  const respondents = loadRespondents();
+  const flagged = respondents.filter(r=>r.inconsistency&&r.inconsistency.isFlagged);
+  document.getElementById('statTotal').textContent = respondents.length;
+  document.getElementById('statFlagged').textContent = flagged.length;
+  if (respondents.length>0) {
+    const counts={D:0,I:0,S:0,C:0};
+    respondents.forEach(r=>counts[r.dominant]++);
+    document.getElementById('statDominant').textContent = Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+  }
+  document.getElementById('adminSubLabel').textContent = `${respondents.length} profile${respondents.length!==1?'s':''} stored`;
+  renderRespondentList();
+}
+function renderRespondentList() {
+  const respondents = loadRespondents().sort((a,b)=>b.id-a.id);
+  const container = document.getElementById('respondentList');
+  container.innerHTML = '';
+  let filtered = respondents;
+  if (currentFilter==='flagged') filtered = respondents.filter(r=>r.inconsistency&&r.inconsistency.isFlagged);
+  else if (['D','I','S','C'].includes(currentFilter)) filtered = respondents.filter(r=>r.dominant===currentFilter);
+  if (filtered.length===0) { container.innerHTML='<div class="empty-state">No profiles match this filter.</div>'; return; }
+  filtered.forEach(r => {
+    const isFlagged = r.inconsistency&&r.inconsistency.isFlagged;
+    const total = Object.values(r.scores).reduce((a,b)=>a+b,0);
+    const date = new Date(r.completedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const card = document.createElement('div');
+    card.className = `respondent-card${isFlagged?' flagged-card':''}`;
+    card.innerHTML = `
+      <div class="rc-top">
+        <div><div class="rc-name">${r.name}</div><div class="rc-meta">${date}</div></div>
+        <div class="rc-badges">
+          <span class="badge dominant-${r.dominant}">${r.dominant} — ${profiles[r.dominant].tagline}</span>
+          ${isFlagged?'<span class="badge flag">⚑ Flagged</span>':''}
+        </div>
+      </div>
+      <div class="rc-scores">
+        ${['D','I','S','C'].map(t=>`<span>${t}: ${Math.round((r.scores[t]/total)*100)}%</span>`).join('')}
+        <span style="margin-left:auto;color:#555">${r.inconsistency?r.inconsistency.totalChanges:0} change(s)</span>
+      </div>
+      <div class="rc-detail" id="detail-${r.id}"></div>`;
+    card.onclick = () => toggleDetail(r);
+    container.appendChild(card);
+  });
+}
+function toggleDetail(r) {
+  const el = document.getElementById(`detail-${r.id}`);
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.rc-detail.open').forEach(d=>d.classList.remove('open'));
+  if (isOpen) return;
+  const isFlagged = r.inconsistency&&r.inconsistency.isFlagged;
+  let html = '';
+  if (isFlagged&&r.inconsistency.reasons.length>0) {
+    html += `<div class="flag-detail"><strong>⚑ Flag reasons:</strong><br>${r.inconsistency.reasons.map(x=>'• '+x).join('<br>')}</div>`;
+  }
+  if (r.questionDetails) {
+    html += `<div class="answer-grid">`;
+    r.questionDetails.forEach(qd => {
+      const changed = qd.changeCount>0;
+      html += `<div class="answer-item${changed?' changed':''}">
+        <span class="q-num">Q${qd.questionIndex+1}${changed?` <span class="changes-note">(changed ${qd.changeCount}x)</span>`:''}</span>
+        ${qd.finalAnswerText||'—'} <span style="opacity:0.5">[${qd.finalAnswerType}]</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  el.innerHTML = html;
+  el.classList.add('open');
+}
+function clearAllData() {
+  if (confirm('Delete all respondent profiles? This cannot be undone.')) { localStorage.removeItem(STORAGE_KEY); renderDashboard(); }
+}
+function exitAdmin() {
+  document.getElementById('adminSection').classList.add('hidden');
+  document.getElementById('nameSection').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
